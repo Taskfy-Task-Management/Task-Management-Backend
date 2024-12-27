@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -21,6 +21,18 @@ export class WatchlistService {
    * @returns The created watchlist entry.
    */
   async addToWatchlist(userId: number, taskId: number) {
+    // Check if the task is already in the user's watchlist
+    const existingEntry = await this.prisma.watchlist.findUnique({
+      where: {
+        userId_taskId: { userId, taskId }, // Compound unique key
+      },
+    });
+
+    if (existingEntry) {
+      throw new ConflictException('This task is already in your watchlist.');
+    }
+
+    // Add the task to the watchlist
     return this.prisma.watchlist.create({
       data: { userId, taskId },
     });

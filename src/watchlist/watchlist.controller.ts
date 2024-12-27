@@ -1,6 +1,6 @@
 import { Controller, Post, Delete, Get, Body, Param } from '@nestjs/common';
 import { WatchlistService } from './watchlist.service';
-
+import { BadRequestException } from '@nestjs/common';
 /**
  * WatchlistController handles HTTP requests related to managing a user's watchlist,
  * including adding tasks, removing tasks, and retrieving the watchlist.
@@ -22,7 +22,11 @@ export class WatchlistController {
    */
   @Post()
   async addToWatchlist(@Body() body: { userId: number; taskId: number }) {
-    return this.watchlistService.addToWatchlist(body.userId, body.taskId);
+    const { userId, taskId } = body;
+    if (!userId || !taskId) {
+      throw new BadRequestException('Missing userId or taskId');
+    }
+    return this.watchlistService.addToWatchlist(userId, taskId);
   }
 
   /**

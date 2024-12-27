@@ -29,7 +29,7 @@ export class TasksController {
       description: string;
       status: string;
       priority: string;
-      deadline: Date;
+      deadline: string;
       userId: number;
       projectId: number;
     },

@@ -26,18 +26,39 @@ export class TasksService {
     description: string;
     status: string;
     priority: string;
-    deadline: Date;
+    deadline: string; // Accept deadline as string from client
     userId: number;
     projectId: number;
   }) {
+    // Validate that the project exists
     const projectExists = await this.prisma.project.findUnique({
       where: { id: data.projectId },
     });
+
     if (!projectExists) {
       throw new Error('Project not found');
     }
-    return this.prisma.task.create({ data });
+
+    // Convert deadline string to Date object
+    const formattedDeadline = new Date(data.deadline);
+    if (isNaN(formattedDeadline.getTime())) {
+      throw new Error('Invalid deadline format. Expected ISO-8601 DateTime.');
+    }
+
+    // Create the task
+    return this.prisma.task.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        priority: data.priority,
+        deadline: formattedDeadline,
+        userId: data.userId,
+        projectId: data.projectId,
+      },
+    });
   }
+
 
   /**
    * Deletes a task by its ID.

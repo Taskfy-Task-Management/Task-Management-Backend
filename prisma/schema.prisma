@@ -4,11 +4,54 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+model User {
+  id        Int         @id @default(autoincrement())
+  name      String
+  email     String      @unique
+  password  String
+  tasks     Task[]
+  watchlist Watchlist[]
+  projects  Project[] // Add this field to define the reverse relationship with `Project`
+}
+
+model Task {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String
+  status      String
+  priority    String
+  deadline    DateTime
+  userId      Int
+  projectId   Int
+  user        User        @relation(fields: [userId], references: [id])
+  project     Project     @relation(fields: [projectId], references: [id])
+  watchlist   Watchlist[]
+}
+
+model Project {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String
+  tasks       Task[]
+  userId      Int
+  user        User   @relation(fields: [userId], references: [id]) // Relation to `User`
+}
+
+model Watchlist {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  taskId Int
+  user   User @relation(fields: [userId], references: [id])
+  task   Task @relation(fields: [taskId], references: [id])
+
+  @@unique([userId, taskId]) // Ensure no duplicate entries
 }
